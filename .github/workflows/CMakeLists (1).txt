@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.18)
+project(nd_internal CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -O2")
+
+# Both are fetched by CI: third_party/imgui (v1.90.9) and third_party/dobby/<ABI>/libdobby.a
+set(IMGUI ${CMAKE_SOURCE_DIR}/third_party/imgui)
+add_library(dobby STATIC IMPORTED)
+set_target_properties(dobby PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/third_party/dobby/${ANDROID_ABI}/libdobby.a)
+
+add_library(nd_internal SHARED internal.cpp
+    ${IMGUI}/imgui.cpp ${IMGUI}/imgui_draw.cpp ${IMGUI}/imgui_tables.cpp ${IMGUI}/imgui_widgets.cpp
+    ${IMGUI}/backends/imgui_impl_opengl3.cpp)
+target_include_directories(nd_internal PRIVATE ${IMGUI} ${IMGUI}/backends)
+target_compile_definitions(nd_internal PRIVATE IMGUI_IMPL_OPENGL_ES3 IMGUI_DISABLE_DEMO_WINDOWS IMGUI_DISABLE_DEBUG_TOOLS)
+target_link_libraries(nd_internal dobby EGL GLESv3 log dl)
